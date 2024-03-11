@@ -15,8 +15,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # Docker image 
-      - name: Build Docker Image
+      - name: Build Docker Image - Backend
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:v1 -f Dockerfile .
+
+      - name: Build Docker Image - Frontend
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:v1 -f Dockerfile-web .
 
       - name: Login to Docker Hub
@@ -24,6 +26,7 @@ jobs:
 
       - name: Docker Push
         run: docker push ${{ secrets.DOCKER_USERNAME }}/backend:v1
+      - name: Docker Push
         run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend:v1
         
 
