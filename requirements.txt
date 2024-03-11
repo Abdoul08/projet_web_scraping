@@ -1,0 +1,10 @@
+flask
+flask-restful
+mysql-connector-python
+
+
+streamlit
+pandas
+requests
+matplotlib
+seaborn

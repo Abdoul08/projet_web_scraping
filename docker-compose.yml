@@ -1,0 +1,193 @@
+# version: '3.3'
+
+# # services:
+    
+
+# #     backend:
+# #         build:
+# #             context: .
+# #             dockerfile: Dockerfile-back
+            
+# #             volumes:
+# #                 - .:/app
+# #             command: python3.9 backend.py
+
+# #             security_opt:
+# #                 - seccomp:unconfined
+
+# #             depends_on:
+# #                 - mysql
+
+# #             environment:
+# #                 DATABASE_URL: mysql://user:password@mysql:3306/web_scraping
+# #     mysql:
+# #         image: mysql:latest
+# #         container_name: mysql
+# #         command: --default-authentification-plugin=mysql_native_password
+# #         restart: always
+        
+# #         environment:
+# #             MYSQL_ROOT_PASSWORD: scraping
+# #             MYSQL_DATABASE: web_scraping
+# #             MYSQL_USER: root
+# #             MYSQL_PASSWORD: root
+# #         ports:
+# #             - 3306:3306
+# #     phpmyadmin:
+# #         depends_on:
+# #             - db
+# #         image: phpmyadmin:latest
+# #         ports:
+# #             - "8000:80"
+# #         restart: always
+# #         environment:
+# #             WORDPRESS_DB_HOST: db:3306
+# #             WORDPRESS_DB_USER: wordpress
+# #             WORDPRESS_DB_PASSWORD: wordpress
+# #             WORDPRESS_DB_NAME: wordpress
+
+
+# services:
+#     flask-app:
+#       build: ./
+#       ports:
+#         - "5001:5000"
+#       depends_on:
+#         - db
+#       environment:
+#         - MYSQL_HOST=localhost
+#         - MYSQL_USER=root
+#         - MYSQL_PASSWORD=root
+#         - MYSQL_DB=test
+#       volumes:
+#         - ./:/app
+  
+#     db:
+#       image: mysql:latest
+#       hostname: mysql
+#       restart: always
+#       ports:
+#         - "3307:3306"
+#       environment:
+#         - MYSQL_ROOT_PASSWORD=root
+#         - MYSQL_DATABASE=web_scraping
+  
+#     phpmyadmin:
+#       image: phpmyadmin/phpmyadmin:latest
+#       ports:
+#         - "8880:80"
+#       environment:
+#         - PMA_ARBITRARY=1
+#       depends_on:
+#         - db
+#     streamlit:
+#         build:
+#             context: .
+#             dockerfile: Dockerfile-web
+#             container_name: web_scraping-classification
+#             #image du scraping
+#             volumes:
+#                 - .:/app
+#             command: streamlit run frontend.py
+#             security_opt:
+#                 -seccomp:unconfind
+#             depends_on:
+#                     - backend
+#             ports:
+#                 - 8501:8501
+
+
+#     name: UIE_M2 - Projet churn finance with CI/CD deploy
+
+# env:
+#   DOCKER_USER: ${{secrets.USER_NAME}}
+#   DOCKER_PASSWORD: ${{secrets.PASSWORD}}
+#   DOCKER_REPO_NAME_BACK: ${{secrets.REPOSITORY_DOCKER_HUB_BACK}}
+#   DOCKER_REPO_NAME_FRONT: ${{secrets.REPOSITORY_DOCKER_HUB_FRONT}}
+#   MON_TEST: ${{secrets.MON_TEST_PWD}}
+
+# # conditions exécution du Jobs pour la partie intégration continue CI
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches:
+#       - master
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest #systeme d'exploitation ainstaller sur docker
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4 #recupere le projet gitlab action
+
+#       - name: Set up Docker Build
+#         uses: docker/setup-buildx-action@v3
+
+#       # Docker image pour la collect et le pretraitement de données
+#       - name: Build Docker Image for collect pretraining and modeling
+#         run: docker build -t churn_finance_g2_c_p_m -f Dockerfile-c-pt-m .
+
+#       # Docker image back
+#       - name: Build Docker Image back
+#         run: docker build -t churn_finance_g2_back -f Dockerfile-back .
+
+#       # Docker image front
+#       - name: Build Docker Image front
+#         run: docker build -t churn_finance_g2_front -f Dockerfile-web .
+
+#       # Lister les images
+#       - name: List of Docker images
+#         run: docker image ls
+
+#       # Lancer le conteneur docker containeur collect pretraining modeling
+#       - name: Run Docker Container for collect pretraining and modeling
+#         run: docker run -d -p 4000:4000 churn_finance_g2_c_p_m
+
+#       # Lancer le conteneur docker pour le back
+#       - name: Run Docker Container for back
+#         run: docker run -d -p 5000:5000 churn_finance_g2_back
+
+#       # Lancer le conteneur docker pour le front
+#       - name: Run Docker Container for front
+#         run: docker run -d -p 8501:8501 churn_finance_g2_front
+
+#       # Lister les conteneur
+#       - name: List of Docker containers
+#         run: docker ps -a
+
+#       # Filtrer l'ID des conteneurs pour les images suivantes
+#       - name: List of Docker -q AFTER
+#         run: |
+#           docker ps --filter "ancestor=churn_finance_g2_c_p_m" --filter "ancestor=churn_finance_g2_back" --filter "ancestor=churn_finance_g2_front" -q
+
+#       # Me connecter sur dockerHub
+#       - name: Docker login
+#         run: | # log into docker hub account
+#           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      
+#       # Recuperer la date et l'heure aujourd'hui
+#       - name: Get current date # get the date of the build
+#         id: date
+#         run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+
+#       # Builder l'image du back
+#       - name: Build the Docker image BACK # push The image to the docker hub
+#         run: docker build . --file Dockerfile-back --tag $DOCKER_USER/$DOCKER_REPO_NAME_BACK:${{ steps.date.outputs.date }}
+
+#       # Builder l'image du front
+#       - name: Build the Docker image FRONT # push The image to the docker hub
+#         run: docker build . --file Dockerfile-web --tag $DOCKER_USER/$DOCKER_REPO_NAME_FRONT:${{ steps.date.outputs.date }}
+
+#       # Pusher l'image du back sur dockerHub
+#       - name: Docker Push image BACK 
+#         run: docker push $DOCKER_USER/$DOCKER_REPO_NAME_BACK:${{ steps.date.outputs.date }}
+
+#       # Pusher l'image du front sur dockerHub
+#       - name: Docker Push image FRONT
+#         run: docker push $DOCKER_USER/$DOCKER_REPO_NAME_FRONT:${{ steps.date.outputs.date }}
+
+#       # Arreter le conteneur filter
+#       - name: Stop Docker Container FRONT and BACK
+#         run: docker stop $(docker ps --filter "ancestor=churn_finance_g2_c_p_m" --filter "ancestor=churn_finance_g2_back" --filter "ancestor=churn_finance_g2_front" -q)

@@ -1,0 +1,19 @@
+# Utilisez l'image Python officielle en tant qu'image parent
+FROM python:3.9
+
+# Définissez le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Copiez le fichier actuel dans le répertoire de travail du conteneur
+COPY requirements.txt .
+
+# Installez les dépendances de l'application
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Exposez le port 8501 sur le conteneur
+EXPOSE 8501
+
+# Définissez la commande par défaut pour exécuter votre application Streamlit
+CMD ["streamlit", "run", "--server.port", "8501", "frontend.py"]

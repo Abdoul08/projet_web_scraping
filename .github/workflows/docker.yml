@@ -1,0 +1,62 @@
+name: Build and Push Docker Image
+
+on:
+  # Déclencher le workflow sur les pushs sur la branche principale
+  push:
+    branches:
+      - main
+
+jobs:
+  Construire-et-deployer:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Cloner le code source
+      - uses: actions/checkout@v4
+
+      # Docker image 
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:v1 -f Dockerfile .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:v1 -f Dockerfile-web .
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker Push
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/backend:v1
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend:v1
+        
+
+
+# on:
+#     push:
+#       branches:
+#         - main
+#     pull_request:
+#       branches:
+#         - main
+# jobs:
+#     build:
+#       runs-on: ubuntu-latest
+#       steps:
+#         - name: Checkout Repository
+#           uses: actions/checkout@v4
+  
+#         - name: Set up Docker Buildx
+#           uses: docker/setup-buildx-action@v3
+  
+#         - name: Build Docker Image
+#           run: docker build . -t collecte
+  
+#         - name: List of Docker images
+#           run: docker image ls
+  
+#         - name: Run Docker Container
+#           run: docker run -d -p 5000:5000 collecte
+  
+  
+#         - name: List of Docker -a AFTER
+#           run: docker ps -a  
+  
+#         - name: List of Docker -q AFTER
+#           run: docker ps --filter "ancestor=mldetectionfraude" -q
