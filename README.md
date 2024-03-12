@@ -10,6 +10,8 @@
 
 **-Télécharger le fichier test (1).sql et l'exécuter dans mysql pour générer la base de données en local**
 
+**-Adapter les informations d'authentification à votre mysql dans le fichier backend.py**
+
 **-Lancer les commandes suivantes :**
 
 -`py backend.py` pour lancer le backend
