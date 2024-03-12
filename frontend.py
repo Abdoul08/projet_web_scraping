@@ -10,7 +10,7 @@ st.write('''
          ''')
 
 # Faire une requête à l'API backend pour récupérer les données
-req = requests.get("http://host.docker.internal:5000/index_front")
+req = requests.get("http://127.0.0.1:5000/index_front")
 
 # Vérifier si la requête a réussi
 if req.status_code == 200:

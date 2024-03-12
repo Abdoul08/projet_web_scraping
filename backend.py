@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_restful import Api, Resource
+from flask_mysqldb import MySQL
 
 
 import os
@@ -12,17 +13,14 @@ api = Api(backend)
 backend.config['UPLOAD_FOLDER'] = '/data_sources/'
 
 # Configuration de la base de données MySQL
-backend.config['MYSQL_HOST'] = 'host.docker.internal'
+backend.config['MYSQL_HOST'] = 'localhost'
 backend.config['MYSQL_USER'] = 'root' # Utilisateur MySQL
 backend.config['MYSQL_PASSWORD'] = '12345678' # Mot de passe MySQL
 backend.config['MYSQL_DB'] = 'test' # Base de données MySQL
 
-mysql = mysql.connector.connect(
-    host=backend.config['MYSQL_HOST'],
-    user=backend.config['MYSQL_USER'],
-    password=backend.config['MYSQL_PASSWORD'],
-    database=backend.config['MYSQL_DB']
-)
+
+
+mysql = MySQL(backend)
 
 @backend.get('/ajout')
 def ajout():
@@ -71,7 +69,7 @@ def insertion():
             # fichier = request.files['fichier']
             # filename = secure_filename(fichier.filename)
 
-            cur = mysql.cursor()
+            cur = mysql.connection.cursor()
             cur.execute("INSERT INTO test (site) values(%s)", (site,) )
             #mysql.commit
             mysql.commit()
@@ -103,7 +101,7 @@ def update(id):
     if request.method in ["POST","PUT"]:
         site = request.form['site']
         # dump(site)
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("UPDATE test SET site=%s WHERE id=%s", (site, id))
         mysql.commit()
         # print(cur)
@@ -114,7 +112,7 @@ def update(id):
 
 @backend.route('/liens_update/<int:id>',methods=["GET"])
 def liens_update(id):
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM test WHERE id = %s", (id,))
     update = cur.fetchone()
     cur.close()
@@ -126,7 +124,7 @@ def liens_update(id):
 @backend.route('/delete/<int:id>', methods=["DELETE","GET","POST"])
 def delete(id):
     # if request.form.get('_method') in ['DELETE',"GET","POST"]:
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("DELETE FROM test WHERE id=%s", (id,))
         mysql.commit()
         cur.close()
@@ -145,7 +143,7 @@ def categorie_form():
 #tableau des donnees dans la base 
 @backend.route("/categorie_index",methods=["GET"])
 def categorie_index():
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM categorie")
     result = cur.fetchall()
     cur.close()
@@ -159,7 +157,7 @@ def categorie_update():
         libelle = request.form['libelle']
         id = request.form['categorie_id']
         # dump(site)
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("UPDATE categorie SET libelle=%s WHERE id=%s", (libelle, id))
         mysql.commit()
         # print(cur)
@@ -170,7 +168,7 @@ def categorie_update():
 
 @backend.route('/categorie_liens_update/<int:id>',methods=["GET"])
 def categorie_liens_update(id):
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM categorie WHERE id = %s", (id,))
     update = cur.fetchone()
     cur.close()
@@ -183,7 +181,7 @@ def categorie_liens_update(id):
 @backend.route('/categorie_delete/<int:id>', methods=["DELETE","GET","POST"])
 def categorie_delete(id):
     # if request.form.get('_method') in ['DELETE',"GET","POST"]:
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("DELETE FROM categorie WHERE id=%s", (id,))
         mysql.commit()
         cur.close()
@@ -201,7 +199,7 @@ def categorie_delete(id):
 def insertion_categorie():
     if request.method == "POST":
         libelle = request.form['libelle']
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("INSERT INTO categorie (libelle) values(%s)", (libelle,) )
         #mysql.commit
         mysql.commit()
@@ -213,7 +211,7 @@ def insertion_categorie():
 #utilisateur
 @backend.route('/register',methods=["GET"])
 def register():
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM categorie")
     categorie = cur.fetchall()
     cur.close()
@@ -257,7 +255,7 @@ def connexion_user():
 #accueil utilisateur
 @backend.route("/index_user", methods=["GET"])
 def index_user():
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM user, categorie where user.categorie_id=categorie.id")
     result = cur.fetchall()
     print(result)
@@ -276,7 +274,7 @@ def user_update():
         email = request.form['email']
         categorie_id = request.form['categorie_id']
         # dump(site)
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("UPDATE user SET prenom=%s,nom=%s,email=%s,categorie_id=%s WHERE id=%s", (prenom,nom,email,categorie_id,user_id))
         mysql.commit()
         # print(cur)
@@ -288,10 +286,10 @@ def user_update():
 
 @backend.route('/user_liens_update/<int:id>',methods=["GET"])
 def user_liens_update(id):
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM user,categorie WHERE user.categorie_id=categorie.id and user.id = %s", (id,))
     update = cur.fetchone()
-    cat = mysql.cursor()
+    cat = mysql.connection.cursor()
     cat.execute("SELECT * FROM categorie")
     categories = cat.fetchall()
     cat.close()
@@ -310,7 +308,7 @@ def user_liens_update(id):
 @backend.route('/user_delete/<int:id>', methods=["DELETE","GET","POST"])
 def user_delete(id):
     # if request.form.get('_method') in ['DELETE',"GET","POST"]:
-        cur = mysql.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("DELETE FROM user WHERE id=%s", (id,))
         mysql.commit()
         cur.close()
@@ -319,11 +317,11 @@ def user_delete(id):
 
 @backend.get('/')
 def index():
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT  SUM(CASE WHEN Categorie = 'fourniture_bureau' THEN 1 ELSE 0 END) AS nb_fourniture_bureau, SUM(CASE WHEN Categorie = 'btp' THEN 1 ELSE 0 END) AS nb_btp, SUM(CASE WHEN Categorie = 'autres' THEN 1 ELSE 0 END) AS nb_autres FROM test;")
     index = cur.fetchone()
 
-    cat = mysql.cursor()
+    cat = mysql.connection.cursor()
     cat.execute("SELECT count(*) FROM user")
     update = cat.fetchone()
     # nombre_categorie_int = [int(x) for x in index]
@@ -334,7 +332,7 @@ def index():
 
 @backend.route("/index_front",methods=['GET'])
 def index_front():
-    cur = mysql.cursor()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT Categorie, SUM(CASE WHEN Categorie = 'fourniture_bureau' THEN 1 ELSE 0 END) AS nb_fourniture_bureau, SUM(CASE WHEN Categorie = 'btp' THEN 1 ELSE 0 END) AS nb_btp, SUM(CASE WHEN Categorie = 'autres' THEN 1 ELSE 0 END) AS nb_autres FROM test GROUP BY Categorie;")
     rows = cur.fetchall()
 
