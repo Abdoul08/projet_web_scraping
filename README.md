@@ -2,21 +2,23 @@
 
 ## Comment l'exécuter ?
 
-**Cloner le projet**
+**-Cloner le projet via la commande suivante**
 
-git clone https://github.com/Abdoul08/projet_web_scraping.git
+`git clone https://github.com/Abdoul08/projet_web_scraping.git`
 
-**Se placer dans le repertoire racine et lancer les commandes suivantes**
+**-Se placer dans le repertoire racine du projet**
 
-` docker build -t backend-flask .   `
+**-Télécharger le fichier test (1).sql et l'exécuter dans mysql pour générer la base de données en local**
 
-` docker run -d -p 5000:5000 backend-flask `
+**-Lancer les commandes suivantes :**
 
-` docker build -t front -f Dockerfile-web .` 
+-`py backend.py` pour lancer le backend
 
-` docker run -d -p 8501:8501 front `
+-`streamlit run frontend.py` pour lancer le frondtend
 
-Lien vers le docker hub des images : https://hub.docker.com/repositories/abdoul08
+**-Accéder aux différents liens fournis par les commandes précédentes pour afficher le frontend et le backend**
+
+Lien vers le docker hub des images frontend et backend : https://hub.docker.com/repositories/abdoul08
 
 
 
